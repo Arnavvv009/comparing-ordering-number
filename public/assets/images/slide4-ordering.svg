@@ -1,0 +1,28 @@
+<svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="s4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2e205e"/><stop offset="100%" stop-color="#1b103c"/></linearGradient></defs>
+<rect width="1000" height="400" fill="url(#s4)"/><rect x="0" y="330" width="1000" height="70" fill="#0e0724"/>
+<text x="500" y="44" text-anchor="middle" font-family="Nunito,sans-serif" font-size="22" font-weight="900" fill="#ffbe1a">🏁 Ordering a Whole List</text>
+<g font-family="monospace" text-anchor="middle" font-weight="900">
+<rect x="230" y="230" width="120" height="70" rx="10" fill="#4A90D9" stroke="#2a6ba8" stroke-width="3"/>
+<text x="290" y="275" font-size="26" fill="#0e0724">-2</text><text x="290" y="222" font-size="15" fill="#4A90D9" font-family="Nunito,sans-serif">1st</text>
+<rect x="370" y="195" width="120" height="105" rx="10" fill="#a78bfa" stroke="#7c5cd8" stroke-width="3"/>
+<text x="430" y="258" font-size="26" fill="#0e0724">0</text><text x="430" y="187" font-size="15" fill="#a78bfa" font-family="Nunito,sans-serif">2nd</text>
+<rect x="510" y="160" width="120" height="140" rx="10" fill="#34d399" stroke="#1d9e6f" stroke-width="3"/>
+<text x="570" y="242" font-size="24" fill="#0e0724">0.5</text><text x="570" y="152" font-size="15" fill="#34d399" font-family="Nunito,sans-serif">3rd</text>
+<rect x="650" y="120" width="120" height="180" rx="10" fill="#ffbe1a" stroke="#c99400" stroke-width="3"/>
+<text x="710" y="222" font-size="26" fill="#0e0724">3</text><text x="710" y="112" font-size="15" fill="#ffbe1a" font-family="Nunito,sans-serif">4th</text>
+</g>
+<text x="290" y="322" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="800" fill="#bca8f2">smallest</text>
+<text x="710" y="322" text-anchor="middle" font-family="Nunito,sans-serif" font-size="14" font-weight="800" fill="#bca8f2">largest</text>
+<text x="500" y="88" text-anchor="middle" font-family="Nunito,sans-serif" font-size="17" font-weight="800" fill="#ffffff">Compare two at a time, again and again, until every number has its place</text>
+<g transform="translate(80,215)">
+<rect x="-4" y="-40" width="10" height="18" fill="#4d3b84" rx="4"/><circle cx="1" cy="-42" r="7" fill="#ffbe1a"/>
+<rect x="-6" y="46" width="10" height="28" fill="#ff8a50" rx="4" transform="rotate(20 -6 46)"/>
+<rect x="72" y="46" width="10" height="28" fill="#ff8a50" rx="4" transform="rotate(-20 72 46)"/>
+<rect x="-20" y="-22" width="90" height="90" rx="20" fill="#2d1c69" stroke="#4d3b84" stroke-width="5"/>
+<rect x="-8" y="-10" width="66" height="66" rx="12" fill="#1b103c"/>
+<circle cx="10" cy="18" r="7" fill="#00f3ff"/><circle cx="42" cy="18" r="7" fill="#00f3ff"/>
+<path d="M8 40 Q25 52 42 40" stroke="#ffffff" stroke-width="5" fill="none" stroke-linecap="round"/>
+<rect x="-2" y="66" width="16" height="30" rx="6" fill="#4d3b84" transform="rotate(-12 -2 66)"/>
+<rect x="42" y="66" width="16" height="30" rx="6" fill="#4d3b84" transform="rotate(12 42 66)"/>
+</g></svg>
