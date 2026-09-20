@@ -27,46 +27,12 @@ export function isMuted() {
   return isAudioMuted;
 }
 
-// Helper to convert math characters to spoken words for natural speech synthesis
-function formatTextForSpeech(text) {
-  if (!text) return '';
-  let s = text;
-  // Replace negative signs and temperatures
-  s = s.replace(/−(\d+)\s*°C/g, 'minus $1 degrees Celsius');
-  s = s.replace(/(\d+)\s*°C/g, '$1 degrees Celsius');
-  s = s.replace(/−(\d+)/g, 'minus $1');
-  s = s.replace(/-\s*(\d+)/g, 'minus $1');
-
-  // Replace fractions
-  s = s.replace(/\b1\/2\b/g, 'one half');
-  s = s.replace(/\b1\/3\b/g, 'one third');
-  s = s.replace(/\b2\/3\b/g, 'two thirds');
-  s = s.replace(/\b1\/4\b/g, 'one fourth');
-  s = s.replace(/\b3\/4\b/g, 'three fourths');
-  s = s.replace(/\b1\/5\b/g, 'one fifth');
-  s = s.replace(/\b2\/5\b/g, 'two fifths');
-  s = s.replace(/\b3\/5\b/g, 'three fifths');
-  s = s.replace(/\b4\/5\b/g, 'four fifths');
-  s = s.replace(/\b1\/6\b/g, 'one sixth');
-  s = s.replace(/\b5\/6\b/g, 'five sixths');
-  s = s.replace(/\b1\/8\b/g, 'one eighth');
-  s = s.replace(/\b3\/8\b/g, 'three eighths');
-  s = s.replace(/\b5\/8\b/g, 'five eighths');
-  s = s.replace(/\b7\/8\b/g, 'seven eighths');
-  s = s.replace(/\b(\d+)\/(\d+)\b/g, '$1 over $2');
-
-  // Replace comparison operators
-  s = s.replace(/\s*<\s*/g, ' is less than ');
-  s = s.replace(/\s*>\s*/g, ' is greater than ');
-  s = s.replace(/\s*=\s*/g, ' equals ');
-  s = s.replace(/➔|→/g, ' ');
-
-  // Clean decorative emojis
-  s = s.replace(/[🧊⚪🔢🍕📍✨💡🎮🔄📋🏆🔍📖✏️🤔🌡️❄️]/g, '');
-  return s.trim();
-}
-
 export function getAudioUrl(text) {
+  if (!text) return null;
+  const trimmed = text.trim();
+  if (audioMap && audioMap[trimmed]) {
+    return audioMap[trimmed];
+  }
   if (audioMap && audioMap[text]) {
     return audioMap[text];
   }
@@ -74,8 +40,8 @@ export function getAudioUrl(text) {
 }
 
 export async function playAudio(url) {
-  if (isAudioMuted) return;
-  return new Promise((resolve, reject) => {
+  if (isAudioMuted || !url) return;
+  return new Promise((resolve) => {
     stopNarration();
     if (isAudioMuted) {
       resolve();
@@ -88,76 +54,41 @@ export async function playAudio(url) {
         if (currentAudio === audio) currentAudio = null;
         resolve();
       };
-      audio.onerror = (err) => {
+      audio.onerror = () => {
         if (currentAudio === audio) currentAudio = null;
-        reject(err);
+        resolve();
       };
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            // Playback started successfully
+            // Playback started
           })
-          .catch((err) => {
+          .catch(() => {
             if (currentAudio === audio) currentAudio = null;
-            reject(err);
+            resolve();
           });
       }
     } catch (e) {
       currentAudio = null;
-      reject(e);
+      resolve();
     }
   });
-}
-
-function speakWithSpeechSynthesis(text) {
-  if (isAudioMuted || !text) return;
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    try {
-      stopNarration();
-      if (isAudioMuted) return;
-
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-      }
-
-      const cleanText = formatTextForSpeech(text);
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.rate = 0.92;
-      utterance.pitch = 1.05;
-
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(v => v.lang.toLowerCase().includes('en-sg') || v.lang.toLowerCase() === 'en_sg')
-        || voices.find(v => v.lang.toLowerCase().startsWith('en'));
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
-      }
-
-      window.speechSynthesis.speak(utterance);
-    } catch (err) {
-      console.warn('SpeechSynthesis error:', err);
-    }
-  }
 }
 
 export async function speakText(text) {
   if (isAudioMuted || !text) return;
 
-  // 1. If static MP3 exists in audioMap, play the generated MP3
+  // Purely play pre-generated local MP3 audio from audioMap (no browser speech synthesis)
   const localUrl = getAudioUrl(text);
   if (localUrl) {
     try {
       stopNarration();
       if (isAudioMuted) return;
       await playAudio(localUrl);
-      return;
     } catch (e) {
-      console.warn('Static MP3 playback blocked/failed, falling back to SpeechSynthesis:', e);
-      speakWithSpeechSynthesis(text);
+      console.warn('Audio playback error:', e);
     }
-  } else {
-    // 2. Fallback directly to native browser SpeechSynthesis
-    speakWithSpeechSynthesis(text);
   }
 }
 
@@ -181,16 +112,11 @@ export function stopNarration() {
     } catch (e) {}
     currentAudio = null;
   }
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    try {
-      window.speechSynthesis.cancel();
-    } catch (e) {}
-  }
   isPlaying = false;
 }
 
 // Call this on user gestures (e.g. click/tap) to unlock
-// browser autoplay policy and AudioContext/SpeechSynthesis
+// browser autoplay policy for HTMLAudioElement and Web Audio API
 export function unlockAudio() {
   try {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -200,13 +126,6 @@ export function unlockAudio() {
       }
       if (window.__intelliaAudioCtx.state === 'suspended') {
         window.__intelliaAudioCtx.resume().catch(() => {});
-      }
-    }
-    // Prime SpeechSynthesis
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.getVoices();
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
       }
     }
     // Silent audio element to unlock HTMLAudioElement playback
