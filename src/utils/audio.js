@@ -75,7 +75,7 @@ export function getAudioUrl(text) {
 
 export async function playAudio(url) {
   if (isAudioMuted) return;
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     stopNarration();
     if (isAudioMuted) {
       resolve();
@@ -88,20 +88,24 @@ export async function playAudio(url) {
         if (currentAudio === audio) currentAudio = null;
         resolve();
       };
-      audio.onerror = () => {
+      audio.onerror = (err) => {
         if (currentAudio === audio) currentAudio = null;
-        resolve();
+        reject(err);
       };
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          if (currentAudio === audio) currentAudio = null;
-          resolve();
-        });
+        playPromise
+          .then(() => {
+            // Playback started successfully
+          })
+          .catch((err) => {
+            if (currentAudio === audio) currentAudio = null;
+            reject(err);
+          });
       }
     } catch (e) {
       currentAudio = null;
-      resolve();
+      reject(e);
     }
   });
 }
@@ -112,9 +116,14 @@ function speakWithSpeechSynthesis(text) {
     try {
       stopNarration();
       if (isAudioMuted) return;
+
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+
       const cleanText = formatTextForSpeech(text);
       const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.rate = 0.95;
+      utterance.rate = 0.92;
       utterance.pitch = 1.05;
 
       const voices = window.speechSynthesis.getVoices();
@@ -143,11 +152,11 @@ export async function speakText(text) {
       await playAudio(localUrl);
       return;
     } catch (e) {
-      console.warn('Error playing static MP3, falling back to speech synthesis:', e);
+      console.warn('Static MP3 playback blocked/failed, falling back to SpeechSynthesis:', e);
       speakWithSpeechSynthesis(text);
     }
   } else {
-    // 2. Fallback directly to native browser SpeechSynthesis (no API key needed)
+    // 2. Fallback directly to native browser SpeechSynthesis
     speakWithSpeechSynthesis(text);
   }
 }
@@ -180,15 +189,27 @@ export function stopNarration() {
   isPlaying = false;
 }
 
-// Call this inside a user-gesture handler (e.g. button click) to unlock
-// the browser's autoplay policy so subsequent audio plays without restriction.
+// Call this on user gestures (e.g. click/tap) to unlock
+// browser autoplay policy and AudioContext/SpeechSynthesis
 export function unlockAudio() {
   try {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (AudioContextClass) {
-      const ctx = new AudioContextClass();
-      ctx.resume().catch(() => {});
+      if (!window.__intelliaAudioCtx) {
+        window.__intelliaAudioCtx = new AudioContextClass();
+      }
+      if (window.__intelliaAudioCtx.state === 'suspended') {
+        window.__intelliaAudioCtx.resume().catch(() => {});
+      }
     }
+    // Prime SpeechSynthesis
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    }
+    // Silent audio element to unlock HTMLAudioElement playback
     const silent = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
     silent.play().catch(() => {});
   } catch (e) {}

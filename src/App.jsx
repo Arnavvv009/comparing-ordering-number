@@ -60,6 +60,21 @@ export default function App() {
     speakText(text, style);
   };
 
+  // Global one-time interaction listener to unlock browser audio policy immediately
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      unlockAudio();
+    };
+    window.addEventListener('pointerdown', handleFirstInteraction, { capture: true, once: true });
+    window.addEventListener('keydown', handleFirstInteraction, { capture: true, once: true });
+    window.addEventListener('touchstart', handleFirstInteraction, { capture: true, once: true });
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstInteraction, { capture: true });
+      window.removeEventListener('keydown', handleFirstInteraction, { capture: true });
+      window.removeEventListener('touchstart', handleFirstInteraction, { capture: true });
+    };
+  }, []);
+
   // 1. Restore session from localStorage on load (but NOT the phase!)
   useEffect(() => {
     try {
@@ -124,6 +139,7 @@ export default function App() {
 
   // Reset entire lesson
   const handleReset = () => {
+    stopNarration();
     localStorage.removeItem(STORAGE_KEY);
     setPhase('intro');
     setPhaseComplete({
@@ -146,6 +162,7 @@ export default function App() {
 
   // Advance Phase Progressively
   const handlePhaseComplete = (currentPhase, nextPhase) => {
+    stopNarration();
     setPhaseComplete(prev => ({ ...prev, [currentPhase]: true }));
     setPhase(nextPhase);
     
@@ -158,11 +175,6 @@ export default function App() {
       unlockBadge('ordering_pro');
     }
   };
-
-  // Stop narration when phase changes
-  useEffect(() => {
-    stopNarration();
-  }, [phase]);
 
   // Navigation Click Handler
   const handleNavClick = (targetPhase) => {
@@ -191,6 +203,7 @@ export default function App() {
           <StoryPhase 
             onNext={() => handlePhaseComplete('story', 'simulate')} 
             speak={speak}
+            playSound={playSound}
           />
         );
       case 'simulate':
@@ -247,9 +260,15 @@ export default function App() {
       default:
         return (
           <IntroScreen 
-            onBegin={() => { unlockAudio(); setPhase('wonder'); }} 
+            onBegin={() => {
+              unlockAudio();
+              stopNarration();
+              playSound('explore');
+              setPhase('wonder');
+            }} 
             audioEnabled={audioEnabled}
             onToggleAudio={toggleAudio}
+            playSound={playSound}
           />
         );
     }
@@ -260,7 +279,14 @@ export default function App() {
       {/* Header bar with Home button, Nav Bar, and Mute Button beside nav bar (except intro) */}
       {phase !== 'intro' && (
         <div className="top-header-row">
-          <button className="home-btn" onClick={() => setPhase('intro')}>
+          <button 
+            className="home-btn" 
+            onClick={() => {
+              stopNarration();
+              playSound('explore');
+              setPhase('intro');
+            }}
+          >
             🏠 Home
           </button>
 

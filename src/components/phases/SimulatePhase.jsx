@@ -96,6 +96,7 @@ export default function SimulatePhase({ onNext, playSound, speak }) {
   };
 
   const handleResetA = () => {
+    playSound('explore');
     setLabVal(3);
     setLabPresetsSeen(new Set());
     setCompletedStations(prev => { const n = [...prev]; n[0] = false; return n; });
@@ -133,6 +134,7 @@ export default function SimulatePhase({ onNext, playSound, speak }) {
   };
 
   const handlePlotNext = () => {
+    playSound('explore');
     if (plotIdx < PLOT_ROUNDS.length - 1) {
       setPlotIdx(i => i + 1);
       setPlotGuess(null); setPlotFb(null);
@@ -141,6 +143,7 @@ export default function SimulatePhase({ onNext, playSound, speak }) {
   };
 
   const handleResetB = () => {
+    playSound('explore');
     setPlotIdx(0);
     setPlotGuess(null); setPlotFb(null);
     setPlotSolvedCount(0);
@@ -180,6 +183,7 @@ export default function SimulatePhase({ onNext, playSound, speak }) {
   };
 
   const handleDuelNext = () => {
+    playSound('explore');
     if (duelIdx < DUEL_ROUNDS.length - 1) {
       setDuelIdx(i => i + 1);
       setDuelGuess(null); setDuelFb(null);
@@ -188,6 +192,7 @@ export default function SimulatePhase({ onNext, playSound, speak }) {
   };
 
   const handleResetC = () => {
+    playSound('explore');
     setDuelIdx(0);
     setDuelGuess(null); setDuelFb(null);
     setDuelSolvedCount(0);
@@ -244,6 +249,7 @@ export default function SimulatePhase({ onNext, playSound, speak }) {
   };
 
   const handleResetD = () => {
+    playSound('explore');
     setSandboxId(SANDBOX_IDS[0]);
     setPlaced([]);
     setLadderWrong(null);
@@ -268,7 +274,7 @@ export default function SimulatePhase({ onNext, playSound, speak }) {
           { id: 2, label: "Comparison Duel", badge: "C", color: "#ffbe1a" },
           { id: 3, label: "Ordering Ladder", badge: "D", color: "#ff8a50" }
         ].map((tab) => (
-          <div key={tab.id} className={`sim-tab ${station === tab.id ? 'sim-tab--active' : ''}`} onClick={() => setStation(tab.id)}>
+          <div key={tab.id} className={`sim-tab ${station === tab.id ? 'sim-tab--active' : ''}`} onClick={() => { playSound('explore'); setStation(tab.id); }}>
             <div className="sim-tab-badge" style={{ backgroundColor: tab.color }}>{tab.badge}</div>
             <span style={{ fontSize: '13px', fontWeight: '700' }}>{tab.label}</span>
             {completedStations[tab.id] && <span style={{ color: 'var(--accent-success-green)' }}>✓</span>}
@@ -591,18 +597,38 @@ export default function SimulatePhase({ onNext, playSound, speak }) {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px' }}>
-        <button className="btn-nav-outline" onClick={() => { if (station > 0) setStation(p => p - 1); }} disabled={station === 0} style={{ fontSize: '15px', fontWeight: '800', padding: '10px 20px' }}>
+        <button
+          className="btn-nav-outline"
+          onClick={() => {
+            if (station > 0) {
+              playSound('explore');
+              setStation(p => p - 1);
+            }
+          }}
+          disabled={station === 0}
+          style={{ fontSize: '15px', fontWeight: '800', padding: '10px 20px' }}
+        >
           🠔 Previous Station
         </button>
 
         {station < 3 ? (
-          <button className="btn-nav-outline" onClick={() => setStation(p => p + 1)} style={{ fontSize: '15px', fontWeight: '800', padding: '10px 20px' }}>
+          <button
+            className="btn-nav-outline"
+            onClick={() => {
+              playSound('explore');
+              setStation(p => p + 1);
+            }}
+            style={{ fontSize: '15px', fontWeight: '800', padding: '10px 20px' }}
+          >
             Next Station ➔
           </button>
         ) : (
           <button
             className="btn-gold"
-            onClick={onNext}
+            onClick={() => {
+              playSound('levelUp');
+              onNext();
+            }}
             disabled={!completedStations[3]}
             style={{ padding: '12px 28px', fontSize: '15px', fontWeight: '800', opacity: completedStations[3] ? 1 : 0.5, cursor: completedStations[3] ? 'pointer' : 'not-allowed' }}
           >

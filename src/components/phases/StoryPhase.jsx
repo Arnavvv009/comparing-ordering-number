@@ -64,7 +64,7 @@ const slidesData = [
   }
 ];
 
-export default function StoryPhase({ onNext, speak }) {
+export default function StoryPhase({ onNext, speak, playSound }) {
   const [slideIdx, setSlideIdx] = useState(0);
   const currentSlide = slidesData[slideIdx];
 
@@ -73,6 +73,7 @@ export default function StoryPhase({ onNext, speak }) {
   }, [slideIdx, speak]);
 
   const handleNext = () => {
+    if (playSound) playSound('explore');
     if (slideIdx < slidesData.length - 1) {
       setSlideIdx(prev => prev + 1);
     } else {
@@ -81,7 +82,22 @@ export default function StoryPhase({ onNext, speak }) {
   };
 
   const handlePrev = () => {
-    if (slideIdx > 0) setSlideIdx(prev => prev - 1);
+    if (slideIdx > 0) {
+      if (playSound) playSound('explore');
+      setSlideIdx(prev => prev - 1);
+    }
+  };
+
+  const handleDotClick = (idx) => {
+    if (idx !== slideIdx) {
+      if (playSound) playSound('explore');
+      setSlideIdx(idx);
+    }
+  };
+
+  const handleReplayAudio = () => {
+    if (playSound) playSound('explore');
+    speak(currentSlide.body);
   };
 
   const pct = Math.round(((slideIdx + 1) / slidesData.length) * 100);
@@ -93,7 +109,13 @@ export default function StoryPhase({ onNext, speak }) {
         <span>Slide {slideIdx + 1} of 4</span>
         <div className="story-dots">
           {slidesData.map((_, idx) => (
-            <div key={idx} className={`story-dot ${idx === slideIdx ? 'story-dot--active' : ''}`} />
+            <div
+              key={idx}
+              className={`story-dot ${idx === slideIdx ? 'story-dot--active' : ''}`}
+              onClick={() => handleDotClick(idx)}
+              style={{ cursor: 'pointer' }}
+              title={`Jump to Slide ${idx + 1}`}
+            />
           ))}
         </div>
         <span>{pct}%</span>
@@ -109,7 +131,18 @@ export default function StoryPhase({ onNext, speak }) {
         </div>
 
         <div className="story-content-section" style={{ paddingTop: '12px', gap: '10px' }}>
-          <h2 className="story-title" style={{ fontSize: '32px', fontWeight: '900', color: 'var(--accent-gold)', marginBottom: '4px', lineHeight: '1.2' }}>{currentSlide.title}</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <h2 className="story-title" style={{ fontSize: '32px', fontWeight: '900', color: 'var(--accent-gold)', marginBottom: '4px', lineHeight: '1.2' }}>{currentSlide.title}</h2>
+            <button
+              onClick={handleReplayAudio}
+              className="btn-nav-outline"
+              style={{ padding: '6px 14px', fontSize: '13.5px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '999px' }}
+              title="Listen to slide audio again"
+            >
+              <span>🔊</span> Listen
+            </button>
+          </div>
+
           <p className="story-body" style={{ fontSize: '21px', fontWeight: '700', color: '#ece9f5', lineHeight: '1.45', marginBottom: '4px' }}>{currentSlide.body}</p>
           <div className="hint-fact-pill" style={{ alignSelf: 'flex-start', fontSize: '17px', fontWeight: '900', padding: '6px 14px', marginBottom: '4px' }}>
             ✨ {currentSlide.fact} ✨
@@ -123,7 +156,7 @@ export default function StoryPhase({ onNext, speak }) {
           ← Previous
         </button>
         <button className="btn-nav-outline" onClick={handleNext} style={{ fontSize: '15px', fontWeight: '800', padding: '10px 20px' }}>
-          {slideIdx < slidesData.length - 1 ? "Next ➔" : "Go to Practice ➔"}
+          {slideIdx < slidesData.length - 1 ? "Next ➔" : "Next: Simulate ➔"}
         </button>
       </div>
     </div>

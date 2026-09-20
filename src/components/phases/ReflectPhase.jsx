@@ -141,6 +141,20 @@ export default function ReflectPhase({
   const activeConceptIdx = selectedConceptIdx !== null ? selectedConceptIdx : autoIndex;
   const activeConcept = CONCEPT_PROMPTS[activeConceptIdx];
 
+  // Narrate the active reflection prompt when loaded or changed
+  React.useEffect(() => {
+    if (activeConcept) {
+      speak(`${activeConcept.prompt} ${activeConcept.explanation}`);
+    }
+  }, [activeConceptIdx, speak]);
+
+  const handleReplayReflect = () => {
+    if (playSound) playSound('explore');
+    if (activeConcept) {
+      speak(`${activeConcept.prompt} ${activeConcept.explanation}`);
+    }
+  };
+
   return (
     <div style={{
       display: 'flex',
@@ -208,7 +222,14 @@ export default function ReflectPhase({
 
         <Mascot mood="excited" bubble={<span style={{ fontSize: '21px', fontWeight: '800' }}>Amazing work! Let's reflect a little! 📋</span>} />
 
-        <button className="btn-gold btn-shimmer" onClick={onReset} style={{ padding: '18px 44px', fontSize: '25px', fontWeight: '800', alignSelf: 'center', width: '90%', margin: 0 }}>
+        <button
+          className="btn-gold btn-shimmer"
+          onClick={() => {
+            if (playSound) playSound('levelUp');
+            onReset();
+          }}
+          style={{ padding: '18px 44px', fontSize: '25px', fontWeight: '800', alignSelf: 'center', width: '90%', margin: 0 }}
+        >
           Begin New Journey
         </button>
       </div>
@@ -247,9 +268,19 @@ export default function ReflectPhase({
         </div>
 
         <div className="reflect-panel-glow" style={{ textAlign: 'center', width: '100%', border: '1.5px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', padding: '22px 28px', background: 'var(--surface-pill-darkest)', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <h3 style={{ color: 'var(--accent-gold)', fontSize: '30px', fontWeight: '900', marginBottom: '16px', fontFamily: "'Fredoka', sans-serif" }}>
-            Time to Reflect!
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h3 style={{ color: 'var(--accent-gold)', fontSize: '30px', fontWeight: '900', margin: 0, fontFamily: "'Fredoka', sans-serif" }}>
+              Time to Reflect!
+            </h3>
+            <button
+              onClick={handleReplayReflect}
+              className="btn-nav-outline"
+              style={{ padding: '6px 14px', fontSize: '13.5px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '999px' }}
+              title="Listen to reflection explanation again"
+            >
+              <span>🔊</span> Listen
+            </button>
+          </div>
           
           {/* Concept selector tabs */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '16px' }}>
@@ -259,7 +290,10 @@ export default function ReflectPhase({
               return (
                 <button
                   key={idx}
-                  onClick={() => setSelectedConceptIdx(idx)}
+                  onClick={() => {
+                    if (playSound) playSound('explore');
+                    setSelectedConceptIdx(idx);
+                  }}
                   style={{
                     fontSize: '16.5px',
                     fontWeight: '800',

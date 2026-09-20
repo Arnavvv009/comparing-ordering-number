@@ -157,6 +157,7 @@ export default function PlayPhase({
 
   const handleNextQuestion = () => {
     if (currQIdx < 9) {
+      playSound('explore');
       setCurrQIdx(prev => prev + 1);
       setAttempts(0);
       setHintsUsed(0);
@@ -308,12 +309,26 @@ export default function PlayPhase({
           })}
         </div>
 
-        <button className="btn-nav-outline" onClick={onResetWorlds} style={{ marginTop: '20px', padding: '12px 28px', fontSize: '17px', fontWeight: '800', alignSelf: 'center' }}>
+        <button
+          className="btn-nav-outline"
+          onClick={() => {
+            playSound('explore');
+            onResetWorlds();
+          }}
+          style={{ marginTop: '20px', padding: '12px 28px', fontSize: '17px', fontWeight: '800', alignSelf: 'center' }}
+        >
           🔄 Reset Worlds
         </button>
 
         {worldScores[0] !== null && (
-          <button className="btn-gold" onClick={onNext} style={{ marginTop: '12px', padding: '14px 36px', fontSize: '18px', fontWeight: '900', alignSelf: 'center' }}>
+          <button
+            className="btn-gold"
+            onClick={() => {
+              playSound('explore');
+              onNext();
+            }}
+            style={{ marginTop: '12px', padding: '14px 36px', fontSize: '18px', fontWeight: '900', alignSelf: 'center' }}
+          >
             Go to Reflection ➔
           </button>
         )}
@@ -364,12 +379,22 @@ export default function PlayPhase({
             </p>
             <div className="results-actions" style={{ gap: '10px', marginTop: '16px' }}>
               <button className="btn-gold" onClick={handleRetryWorld} style={{ fontSize: '15px', fontWeight: '800', padding: '10px 24px' }}>🔄 Retry World</button>
-              <button className="btn-nav-outline" onClick={() => setActiveWorld(null)} style={{ fontSize: '15px', fontWeight: '800', padding: '10px 24px' }}>🚪 Quit World</button>
+              <button className="btn-nav-outline" onClick={() => { playSound('explore'); setActiveWorld(null); }} style={{ fontSize: '15px', fontWeight: '800', padding: '10px 24px' }}>🚪 Quit World</button>
             </div>
           </div>
         ) : (
           <div className="quiz-question-box">
-            <h2 className="quiz-question-text" style={{ fontSize: '26px', fontWeight: '900', color: '#ffffff', lineHeight: '1.35', marginBottom: '16px' }}>{currentQ.questionText}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+              <h2 className="quiz-question-text" style={{ fontSize: '26px', fontWeight: '900', color: '#ffffff', lineHeight: '1.35', margin: 0 }}>{currentQ.questionText}</h2>
+              <button
+                onClick={() => { playSound('explore'); speak(currentQ.questionText); }}
+                className="btn-nav-outline"
+                style={{ padding: '6px 12px', fontSize: '13px', fontWeight: '800', flexShrink: 0, borderRadius: '999px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                title="Listen to question again"
+              >
+                <span>🔊</span> Listen
+              </button>
+            </div>
 
             <div className="quiz-visual-area" style={{ margin: '14px 0' }}>
               {renderVisual()}

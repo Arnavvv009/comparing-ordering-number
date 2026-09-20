@@ -33,6 +33,7 @@ export default function WonderPhase({ onNext, playSound, speak }) {
 
   const handleReveal = () => {
     if (revealed) {
+      playSound('explore');
       onNext();
       return;
     }
